@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: laravel_nginx
+    restart: always
+    ports:
+      - "8000:80"
+    volumes:
+      - './laravel:/var/www/html'
+      - './docker/nginx/conf.d:/etc/nginx/conf.d'
+    depends_on:
+      - php
+    networks:
+      - laravel_net
+
+  php:
+    container_name: laravel_php
+    build:
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - './laravel:/var/www/html'
+    depends_on:
+      - db
+    networks:
+      - laravel_net
+
+  db:
+    image: postgres:16
+    container_name: laravel_db
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: "root"
+      POSTGRES_PASSWORD: "root"
+      POSTGRES_DB: "laravel"
+    ports:
+      - "5432:5432"
+    networks:
+      - laravel_net
+
+networks:
+  laravel_net:
+    driver: bridge
